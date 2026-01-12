@@ -60,9 +60,7 @@ TITLE_VARIANTS = {
     ]
 }
 
-# -------------------------
-# SEVERITY CALCULATION
-# -------------------------
+
 def calculate_severity(score):
     if score >= 11:
         return "Critical"
@@ -73,9 +71,6 @@ def calculate_severity(score):
     else:
         return "Low"
 
-# -------------------------
-# INCIDENT GENERATION
-# -------------------------
 def generate_incident(i):
     incident = random.choice(INCIDENT_TYPES)
     category, asset = CATEGORY_ASSET_MAP[incident]
@@ -85,16 +80,13 @@ def generate_incident(i):
         weights=[0.4, 0.6]
     )[0]
 
-    # ↓↓↓ LOWER + REALISTIC BASELINES ↓↓↓
     likelihood = random.randint(1, 4)
     impact = random.randint(1, 4)
     exploitability = random.randint(0, 3)
 
-    # External events slightly increase likelihood
     if exposure == "External":
         likelihood += random.choice([0, 1])
 
-    # High-value assets slightly increase impact
     if category in ["Data", "IAM"]:
         impact += random.choice([0, 1])
 
@@ -124,9 +116,6 @@ def generate_incident(i):
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
-# -------------------------
-# MAIN LOOP
-# -------------------------
 LOG_FILE = "/tmp/security_alerts.log"
 
 i = 1

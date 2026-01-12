@@ -4,16 +4,13 @@ import time
 import os
 from requests.auth import HTTPBasicAuth
 
-# =========================
-# CONFIG (FROM ENV VARS)
-# =========================
-SPLUNK_HOST = os.getenv("SPLUNK_HOST")      # https://localhost:8089
-SPLUNK_USER = os.getenv("SPLUNK_USER")      # admin
-SPLUNK_PASS = os.getenv("SPLUNK_PASS")      # your Splunk password
+
+SPLUNK_HOST = os.getenv("SPLUNK_HOST")      
+SPLUNK_USER = os.getenv("SPLUNK_USER")      
+SPLUNK_PASS = os.getenv("SPLUNK_PASS")      
 
 SLACK_WEBHOOK_URL = os.getenv("SLACK_WEBHOOK_URL")
 
-# MUST be one-line search for Splunk export API
 SEARCH_QUERY = (
     'search index=security_alerts severity IN ("High","Critical") '
     '| sort - _time '
@@ -23,9 +20,6 @@ SEARCH_QUERY = (
 POLL_INTERVAL = 30  # seconds
 sent_incidents = set()
 
-# =========================
-# VALIDATION
-# =========================
 print("========== CONFIG CHECK ==========")
 print("[DEBUG] SPLUNK_HOST:", SPLUNK_HOST)
 print("[DEBUG] SPLUNK_USER:", SPLUNK_USER)
@@ -34,11 +28,8 @@ print("[DEBUG] SLACK_WEBHOOK_URL SET:", bool(SLACK_WEBHOOK_URL))
 print("==================================")
 
 if not all([SPLUNK_HOST, SPLUNK_USER, SPLUNK_PASS]):
-    raise EnvironmentError("❌ Missing SPLUNK_HOST, SPLUNK_USER, or SPLUNK_PASS")
+    raise EnvironmentError("Missing SPLUNK_HOST, SPLUNK_USER, or SPLUNK_PASS")
 
-# =========================
-# FUNCTIONS
-# =========================
 def fetch_incidents():
     url = f"{SPLUNK_HOST}/services/search/jobs/export"
     data = {
@@ -93,10 +84,6 @@ def send_to_slack(event):
 
     print("[DEBUG] Slack response status:", resp.status_code)
 
-
-# =========================
-# MAIN LOOP
-# =========================
 print("\n[*] SOC Slack Alert Engine STARTED\n")
 
 while True:
@@ -106,7 +93,6 @@ while True:
         for r in results:
             result = r.get("result", {})
 
-            # 🔑 FIX: Parse JSON inside _raw
             raw = result.get("_raw")
             if not raw:
                 continue
@@ -125,5 +111,5 @@ while True:
         time.sleep(POLL_INTERVAL)
 
     except Exception as e:
-        print("❌ ERROR:", e)
+        print("ERROR:", e)
         time.sleep(POLL_INTERVAL)
